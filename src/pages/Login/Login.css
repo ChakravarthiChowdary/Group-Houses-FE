@@ -1,0 +1,19 @@
+@media screen and (max-width: 568px) {
+  .login__signup {
+    margin-top: 0.5rem !important;
+  }
+}
+
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: #a9a9a9 !important;
+}
+
+.login__textField
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
+  border-color: #fff !important;
+}
+
+.MuiLoadingButton-loadingIndicator {
+  color: #fff !important;
+}

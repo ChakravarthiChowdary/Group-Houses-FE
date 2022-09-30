@@ -1,0 +1,9 @@
+.navbar__selectedItem {
+  color: #7d2ae8 !important;
+}
+
+.navbar__selectedAvatar {
+  border-width: 10px !important;
+  border-color: #7d2ae8 !important ;
+  border-radius: 50%;
+}
