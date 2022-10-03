@@ -16,6 +16,9 @@ export interface LatetsNewsState {
   myPostsLoading: boolean;
   myPostsError: Error | null;
   myPosts: LatestNews[];
+  likedNews: LatestNews[];
+  favNews: LatestNews[];
+  likedOrFavNewsError: Error | null;
 }
 
 export interface User {

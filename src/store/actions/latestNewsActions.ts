@@ -1,15 +1,22 @@
+import { ActionTypes } from "@mui/base";
 import { AnyAction } from "redux";
 import { ThunkAction } from "redux-thunk";
+import { LatestNews } from "../../types/StateTypes";
 import {
   DELETE_NEWS_FAIL,
-  DELETE_NEWS_START,
   DELETE_NEWS_SUCCESS,
+  FAV_NEWS_FAIL,
+  FAV_NEWS_SUCCESS,
+  GET_FAV_LIKED_NEWS_FAIL,
+  GET_FAV_LIKED_NEWS_SUCCESS,
   GET_LATEST_NEWS_FAIL,
   GET_LATEST_NEWS_START,
   GET_LATEST_NEWS_SUCCESS,
   GET_MYPOSTS_FAIL,
   GET_MYPOSTS_START,
   GET_MYPOSTS_SUCCESS,
+  LIKED_NEWS_ERROR,
+  LIKED_NEWS_SUCCESS,
   POST_LATEST_NEWS_FAIL,
   POST_LATEST_NEWS_START,
   POST_LATEST_NEWS_SUCCESS,
@@ -47,7 +54,37 @@ export const getLatestNews = (): ThunkAction<
         return;
       }
 
+      const likedOrFavNewsResponse = await fetch(
+        "http://localhost:5000/api/v1/latestNews/likeandfavnews",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const likedOrFavNewsResult = await likedOrFavNewsResponse.json();
+
+      if (likedOrFavNewsResult.errors || likedOrFavNewsResult.error) {
+        dispatch({
+          type: GET_FAV_LIKED_NEWS_FAIL,
+          payload: likedOrFavNewsResult.errors
+            ? {
+                message: likedOrFavNewsResult.errors[0].msg,
+                statusCode: 500,
+                requestStatus: "Fail",
+              }
+            : likedOrFavNewsResult.error,
+        });
+        return;
+      }
       dispatch({ type: GET_LATEST_NEWS_SUCCESS, payload: result.latestNews });
+
+      dispatch({
+        type: GET_FAV_LIKED_NEWS_SUCCESS,
+        payload: {
+          likedNews: likedOrFavNewsResult.likedNews,
+          favNews: likedOrFavNewsResult.favNews,
+        },
+      });
     } catch (error) {
       dispatch({ type: GET_LATEST_NEWS_FAIL, payload: error });
     }
@@ -220,6 +257,108 @@ export const deleteNews = (
       }
     } catch (error) {
       dispatch({ type: DELETE_NEWS_FAIL, payload: error });
+    }
+  };
+};
+
+export const likeNews = (
+  newsId: string,
+  news: LatestNews
+): ThunkAction<void, RootState, unknown, AnyAction> => {
+  return async (dispatch, getState) => {
+    try {
+      const likedNews = getState().latestNews.likedNews;
+      const token = getState().auth.user.token;
+
+      const response = await fetch(
+        `http://localhost:5000/api/v1/latestNews/like/${newsId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.errors || result.error) {
+        dispatch({
+          type: LIKED_NEWS_ERROR,
+          payload: result.errors
+            ? {
+                message: result.errors[0].msg,
+                statusCode: 500,
+                requestStatus: "Fail",
+              }
+            : result.error,
+        });
+        return;
+      }
+
+      if (result.fav) {
+        likedNews.push(news);
+      }
+
+      dispatch({
+        type: LIKED_NEWS_SUCCESS,
+        payload: result.fav
+          ? likedNews
+          : likedNews.filter((el: LatestNews) => el._id !== news._id),
+      });
+    } catch (error) {
+      dispatch({ type: LIKED_NEWS_ERROR, payload: error });
+    }
+  };
+};
+
+export const favoNews = (
+  newsId: string,
+  news: LatestNews
+): ThunkAction<void, RootState, unknown, AnyAction> => {
+  return async (dispatch, getState) => {
+    try {
+      const token = getState().auth.user.token;
+      const favNews = getState().latestNews.favNews;
+
+      const response = await fetch(
+        `http://localhost:5000/api/v1/latestNews/fav/${newsId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.errors || result.error) {
+        dispatch({
+          type: FAV_NEWS_FAIL,
+          payload: result.errors
+            ? {
+                message: result.errors[0].msg,
+                statusCode: 500,
+                requestStatus: "Fail",
+              }
+            : result.error,
+        });
+        return;
+      }
+      console.log(result);
+      if (result.fav) {
+        favNews.push(news);
+      }
+
+      dispatch({
+        type: FAV_NEWS_SUCCESS,
+        payload: result.fav
+          ? favNews
+          : favNews.filter((el: LatestNews) => el._id !== news._id),
+      });
+    } catch (error) {
+      dispatch({ type: FAV_NEWS_FAIL, payload: error });
     }
   };
 };

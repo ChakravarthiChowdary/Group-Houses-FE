@@ -18,8 +18,13 @@ import { LatestNews } from "../../types/StateTypes";
 import { months } from "../../constants/Months";
 import { DeleteOutline } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
-import { deleteNews } from "../../store/actions/latestNewsActions";
-import { memo } from "react";
+import {
+  deleteNews,
+  favoNews,
+  likeNews,
+} from "../../store/actions/latestNewsActions";
+import { memo, useState } from "react";
+import { useAppSelector } from "../../store/store";
 
 interface IFeaturedNewsProps {
   news: LatestNews;
@@ -30,6 +35,21 @@ const FeaturedNews = (props: IFeaturedNewsProps) => {
   const newsDate = new Date(news.createdDate);
   const location = useLocation();
   const dispatch = useDispatch<any>();
+  const { likedNews, favNews } = useAppSelector((state) => state.latestNews);
+  const [like, setLike] = useState(false);
+  const [fav, setFav] = useState(false);
+
+  if (likedNews.find((el: LatestNews) => el._id === news._id)) {
+    if (!like) setLike(true);
+  } else {
+    if (like) setLike(false);
+  }
+
+  if (favNews.find((el: LatestNews) => el._id === news._id)) {
+    if (!fav) setFav(true);
+  } else {
+    if (fav) setFav(false);
+  }
 
   return (
     <Grid item xs={12} md={4} sm={6}>
@@ -73,11 +93,17 @@ const FeaturedNews = (props: IFeaturedNewsProps) => {
           </RouterLink>
         </CardContent>
         <CardActions>
-          <IconButton aria-label="add to favorites">
-            <FavoriteBorderIcon />
+          <IconButton
+            aria-label="add to favorites"
+            onClick={() => dispatch(favoNews(news._id, news))}
+          >
+            <FavoriteBorderIcon color={fav ? "error" : "inherit"} />
           </IconButton>
-          <IconButton aria-label="share">
-            <ThumbUpOffAltIcon />
+          <IconButton
+            aria-label="like post"
+            onClick={() => dispatch(likeNews(news._id, news))}
+          >
+            <ThumbUpOffAltIcon color={like ? "error" : "inherit"} />
           </IconButton>
           {location.pathname === "/myposts" && (
             <IconButton

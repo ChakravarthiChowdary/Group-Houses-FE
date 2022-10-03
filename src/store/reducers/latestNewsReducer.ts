@@ -4,12 +4,16 @@ import { SIGN_OUT } from "../actionTypes/authActionTypes";
 import {
   CLEAR_POST_NEWS_STATE,
   DELETE_NEWS_SUCCESS,
+  FAV_NEWS_SUCCESS,
+  GET_FAV_LIKED_NEWS_FAIL,
+  GET_FAV_LIKED_NEWS_SUCCESS,
   GET_LATEST_NEWS_FAIL,
   GET_LATEST_NEWS_START,
   GET_LATEST_NEWS_SUCCESS,
   GET_MYPOSTS_FAIL,
   GET_MYPOSTS_START,
   GET_MYPOSTS_SUCCESS,
+  LIKED_NEWS_SUCCESS,
   POST_LATEST_NEWS_FAIL,
   POST_LATEST_NEWS_START,
   POST_LATEST_NEWS_SUCCESS,
@@ -25,6 +29,9 @@ const initialState: LatetsNewsState = {
   myPostsLoading: false,
   myPosts: [],
   myPostsError: null,
+  likedNews: [],
+  favNews: [],
+  likedOrFavNewsError: null,
 };
 
 export const latestNewsReducer = (state = initialState, action: AnyAction) => {
@@ -101,6 +108,28 @@ export const latestNewsReducer = (state = initialState, action: AnyAction) => {
       return {
         ...state,
         myPosts: state.myPosts.filter((post) => post._id !== action.payload),
+      };
+    case LIKED_NEWS_SUCCESS:
+      return {
+        ...state,
+        likedNews: action.payload,
+      };
+    case FAV_NEWS_SUCCESS:
+      return {
+        ...state,
+        favNews: action.payload,
+      };
+    case GET_FAV_LIKED_NEWS_FAIL:
+      return {
+        ...state,
+        likedOrFavNewsError: action.payload,
+      };
+    case GET_FAV_LIKED_NEWS_SUCCESS:
+      return {
+        ...state,
+        likedOrFavNewsError: null,
+        likedNews: action.payload.likedNews,
+        favNews: action.payload.favNews,
       };
     case SIGN_OUT:
       return initialState;
